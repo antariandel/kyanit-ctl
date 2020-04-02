@@ -54,8 +54,11 @@ import collections
 from kyanitapi import Kyanit, KyanitConnectionError, KyanitRequestError
 from kyanitapi import ip_is_valid, netmask_is_valid, get_networks
 
+try:
+    from ._version import __version__
+except ImportError:
+    pass
 
-__version__ = '1.0.0'
 
 __pdoc__ = {}
 
@@ -63,7 +66,6 @@ KYANITCTL_USER_DIR = os.path.join(pathlib.Path.home(), '.kyanitctl')
 
 if not os.path.exists(KYANITCTL_USER_DIR):
     os.mkdir(KYANITCTL_USER_DIR)
-
 
 EXAMPLE_CODE = '''
 # This code is imported on startup, then main is called, if it exists. Neither main, nor cleanup
