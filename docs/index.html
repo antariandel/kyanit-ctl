@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.5" />
 <title>Kyanit CTL Documentation</title>
-<meta name="description" content="Kyanit CTL â€¦" />
+<meta name="description" content="Kyanit CTL …" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -104,8 +104,11 @@ import collections
 from kyanitapi import Kyanit, KyanitConnectionError, KyanitRequestError
 from kyanitapi import ip_is_valid, netmask_is_valid, get_networks
 
+try:
+    from ._version import __version__
+except ImportError:
+    pass
 
-__version__ = &#39;1.0.0&#39;
 
 __pdoc__ = {}
 
@@ -113,7 +116,6 @@ KYANITCTL_USER_DIR = os.path.join(pathlib.Path.home(), &#39;.kyanitctl&#39;)
 
 if not os.path.exists(KYANITCTL_USER_DIR):
     os.mkdir(KYANITCTL_USER_DIR)
-
 
 EXAMPLE_CODE = &#39;&#39;&#39;
 # This code is imported on startup, then main is called, if it exists. Neither main, nor cleanup
