@@ -16,7 +16,7 @@ def get_commit_history(until_rev=None):
     """
 
     if until_rev is not None:
-        GIT_CMD = 'git log --no-decorate --log-size "{}"..'.format(until_rev)
+        GIT_CMD = 'git log --no-decorate --log-size "v{}"..'.format(until_rev)
     else:
         GIT_CMD = 'git log --no-decorate --log-size'
 
@@ -60,7 +60,7 @@ def get_commit_oneline(commit):
         for i in range(3):
             commit.readline()  # discard author and date
         line = commit.readline().strip()
-        return line.partition(':')[2] if ':' in line else line
+        return line.partition(':')[2].strip() if ':' in line else line
 
 
 def get_commit_types(commits, include=[]):
@@ -76,7 +76,9 @@ def get_commit_types(commits, include=[]):
         commit_info = StringIO(commits[revision])
         for i in range(3):
             commit_info.readline()  # discard author and date
-        commit_type = re.match(r'\s+([a-z]+)[(|!|:]', commit_info.readline()).group(1)
+        commit_line = commit_info.readline()
+        commit_type = re.match(r'\s+([a-z]+)[(|!|:]', commit_line).group(1)
+        commit_scope = re.search(r'\((.*)\):', commit_line)
         if include and commit_type not in include:
             continue
         while True:
@@ -86,7 +88,8 @@ def get_commit_types(commits, include=[]):
             if 'BREAKING CHANGE' in line or 'BREAKING-CHANGE' in line:
                 commit_type = '{}!'.format(commit_type)
                 break
-        commits_out[revision] = commit_type
+        commits_out[revision] = (commit_type,
+                                 None if commit_scope is None else commit_scope.group(1))
     return commits_out  # newest first
 
 
@@ -102,7 +105,7 @@ def bump_version_from_hist(start_version, commit_types):
     """
     
     version = semver.parse_version_info(start_version)
-    commit_types = list(commit_types.values())
+    commit_types = [commit_type[0] for commit_type in commit_types.values()]
     for commit_type in commit_types:
         if '!' in commit_type:
             if version.major == 0:
@@ -117,6 +120,12 @@ def bump_version_from_hist(start_version, commit_types):
 
 
 def gen_version():
+    def print_rev_info(commits, rev):
+        print(' - {scope}{oneline} ({rev})'.format(
+            scope='[{}] '.format(commit_types[rev][1]) if commit_types[rev][1] is not None else '',
+            oneline=get_commit_oneline(commits[rev]),
+            rev=rev[:8]))
+
     latest_version = get_latest_version()
     if not latest_version:
         latest_version = '0.0.0'
@@ -127,16 +136,29 @@ def gen_version():
     if new_version == latest_version:
         print('version unchanged: {}'.format(latest_version))
         return latest_version
+    
+    features = []
+    fixes = []
+    docs = []
+
+    for rev in commit_types:
+        if commit_types[rev][0].startswith('feat'):
+            features.append(rev)
+        elif commit_types[rev][0].startswith('fix'):
+            fixes.append(rev)
+        elif commit_types[rev][0].startswith('docs'):
+            docs.append(rev)
 
     print('version bump needed: {} -> {}'.format(latest_version, new_version), end='\n\n')
-    print('features:', end='\n\n')
-    for rev in commit_types:
-        if commit_types[rev].startswith('feat'):
-            print('{} : {}'.format(rev[:8], get_commit_oneline(commits[rev])))
-    print('\nfixes:', end='\n\n')
-    for rev in commit_types:
-        if commit_types[rev].startswith('fix'):
-            print('{} : {}'.format(rev[:8], get_commit_oneline(commits[rev])))
+    print('Features:', end='\n\n')
+    for rev in features:
+        print_rev_info(commits, rev)
+    print('\nFixes:', end='\n\n')
+    for rev in fixes:
+        print_rev_info(commits, rev)
+    # print('\nDocumentation changes:', end='\n\n')
+    # for rev in docs:
+    #     print_rev_info(commits, rev)
     
     return new_version
 
