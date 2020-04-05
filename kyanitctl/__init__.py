@@ -264,7 +264,8 @@ class VerboseAction:
     def print_file_list(self):
         print('Retrieving file list...', end='\r')
         files = self.kyanit.get_file_list()
-        print('Retrieving file list done. Files:', end='\n\n')
+        print('Retrieving file list done.')
+        print('Files on Kyanit:', end='\n\n')
         for file in files:
             print(file)
         print()
@@ -298,13 +299,17 @@ class VerboseAction:
     @_action_handler()
     def print_file(self, filename):
         try:
+            print('Downloading \'{}\' ...'.format(filename), end='\r')
             data = self.kyanit.get_file(filename)
+            print('Downloading \'{}\' done.'.format(filename))
+            print('Contents:', end='\n\n')
             try:
                 print(data.decode())
             except Exception:
                 print(data)
         except KyanitRequestError as exc:
             if exc.args[0] == 404:
+                print()
                 print('File \'{}\' not found on Kyanit.'.format(filename))
             else:
                 raise
