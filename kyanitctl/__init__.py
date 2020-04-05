@@ -408,9 +408,9 @@ def main(*cli_args):
                              'which is a set of 3 letters representing colors Red, Green, Blue, '
                              'Cyan, Magenta, Yellow or White; after initial setup, these colors '
                              'show up on the Kyanit, when the button is pressed; example: RGB, BGY '
-                             ' etc.; must be ommited if -ip is given')
+                             ' etc.; must be omitted if -ip is given')
     parser.add_argument('-setup', action='store_true',
-                        help='intial setup of Kyanit; perform when first connected to the '
+                        help='initial setup of Kyanit; perform when first connected to the '
                              'Kyanit\'s WLAN; must be on Kyanit\'s WLAN for setup to work; '
                              'no other actions will be performed; Color ID and -ip don\'t have to '
                              'be provided, and are disregarded')
@@ -421,7 +421,7 @@ def main(*cli_args):
                              'rescue will be required')
     parser.add_argument('-ip', nargs='?',
                         help='alternative connection method; IP address of the Kyanit, '
-                             'must be given if Color ID is ommited, or if Kyanit is on a non-/24 '
+                             'must be given if Color ID is omitted, or if Kyanit is on a non-/24 '
                              'network')
     parser.add_argument('-reset_network', action='store_true',
                         help='perform initial network selection again')
@@ -447,7 +447,7 @@ def main(*cli_args):
                         help='renames a file on Kyanit')
     parser.add_argument('-netvar', nargs='?', action='append', metavar='JSON',
                         help='get the outbound netvar if JSON is not specified,  or set the '
-                             'inbount netvar to JSON; valid JSON must be specified, escape '
+                             'inbound netvar to JSON; valid JSON must be specified, escape '
                              'quotes with \\\" ')
     parser.add_argument('-stop', action='store_true', help='start code.py')
     parser.add_argument('-stopforce', action='store_true',
