@@ -427,6 +427,9 @@ def main(*cli_args):
                         help='perform initial network selection again')
     parser.add_argument('-ping', action='store_true',
                         help='ping the Kyanit and get system state')
+    parser.add_argument('-timeout', metavar='SECONDS', type=int,
+                        help='set timeout for network operations, except ping; default is 5 '
+                             'seconds')
     parser.add_argument('-files', action='store_true', help='list files currently on Kyanit')
     parser.add_argument('-get', action='extend', nargs='+', metavar='FILE',
                         help='a list of files to get from the Kyanit; warning, all existing local '
@@ -556,6 +559,9 @@ def main(*cli_args):
             exit()
         else:
             raise exc
+    
+    if args.timeout:
+        kyanit.set_timeout(args.timeout)
 
     if args.ip is None:
         print('=== Kyanit {} ({} through \'{}\') ==='
