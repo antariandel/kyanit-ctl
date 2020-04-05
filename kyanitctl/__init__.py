@@ -194,18 +194,18 @@ class VerboseAction:
         except KeyboardInterrupt:
             print('Aborted.', end='\n\n')
     
-    @_action_handler('CHECK COLOR ID OR THE IP ADDRESS AGAIN.')
-    def ping(self, onlyping=False):
+    @_action_handler('CHECK THE COLOR ID OR THE IP ADDRESS AGAIN!')
+    def ping(self):
         print('Pinging...')
         success = self.kyanit.ping(verbose=True)
         print()
         if success:
-            print('Retrieving system status...')
-            status = self.kyanit.get_status()
-            print('System state is {}. Kyanit firmware version is {}.'
-                  .format('OK' if 'ERROR' not in status['run_state']
-                          else status['run_state'],
-                          status['firmware_version']))
+            print('Retrieving system status...', end='\r')
+            self.kyanit.get_status()
+            print('Retrieving system status done.')
+            conn_info = self.kyanit.info()
+            print('Kyanit {} is responding on IP address {}.'
+                  .format(conn_info['color_id'], conn_info['ip_addr']))
         else:
             raise KyanitConnectionError
         print()
