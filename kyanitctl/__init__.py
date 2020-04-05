@@ -521,27 +521,38 @@ def main(*cli_args):
     try:
         kyanit = Kyanit(args.colorid, network_addr=network[1] if network is not None else None)
     except ValueError as exc:
-        if str(exc) == 'NONE':
+        if str(exc) == 'IP invalid':
             parser.print_usage()
             print()
-            print('Either Color ID, -ip or -setup must be given.')
-            print('For getting started, -setup is a recommended first option.')
-            print('See kyanitctl -h for details and help.', end='\n\n')
+            print('The IP address \'{}\' is invalid.'.format(args.ip))
+            print('See kyanitctl -h for help.', end='\n\n')
             exit()
-        elif str(exc) == 'BOTH':
+        elif str(exc) == 'Color ID invalid':
             parser.print_usage()
-            print('Either Color ID or -ip must be given, but not both. See kyanitctl -h for help.',
-                  end='\n\n')
+            print()
+            print('The Color ID \'{}\' is invalid. It either contains unsupported characters, or '
+                  'the resulting IP address octet would be greater than 254.'.format(args.colorid))
+            print('See kyanitctl -h for help.', end='\n\n')
             exit()
-        elif str(exc) == 'CID':
-            print('The provided Color ID is invalid. See kyanitctl -h for help.', end='\n\n')
+        elif str(exc) == 'Network invalid':
+            # kyanitapi error when invalid network address is passed to Kyanit()
+            # this should not normally happen with kyanitctl, as network addresses are detected
+            # automatically.
+            print('ERROR: Unexpected error (network address invalid).')
+            print('Try re-running kyanitctl -reset_network.', end='\n\n')
             exit()
-        elif str(exc) == 'CIDIP':
-            print('The provided Color ID is invalid. It would result in an invalid IP address. '
-                  'Check colors on Kyanit again. See kyanitctl -h for help.', end='\n\n')
+        elif str(exc) == 'no connection method':
+            parser.print_usage()
+            print()
+            print('No connection method. Either Color ID or -ip must be provided.')
+            print('See kyanitctl -h for help.', end='\n\n')
             exit()
-        elif str(exc) == 'IP':
-            print('The provided IP address is invalid. See kyanitctl -h for help.', end='\n\n')
+        elif str(exc) == 'bad connection method':
+            parser.print_usage()
+            print()
+            print('Bad connection method. Either Color ID or -ip must be provided, '
+                  'but not both.', end='\n\n')
+            print('See kyanitctl -h for help.', end='\n\n')
             exit()
         else:
             raise exc
