@@ -135,9 +135,9 @@ def _action_handler(extra_msg=''):
                 func(*args, **kwargs)
             except (KyanitConnectionError, OSError):
                 print('\nERROR: Cannot connect to Kyanit.', end='\n\n')
-                exit()
                 if extra_msg:
                     print(extra_msg)
+                exit()
             except KyanitRequestError as exc:
                 print('\nERROR: Kyanit responded with status code {}'.format(exc.args[0]),
                       end='\n\n')
