@@ -56,7 +56,7 @@ pip install --force-reinstall dist/kyanitctl-<version>-py3-none-any.whl
 To switch back to the latest released version, use:
 
 ```
-pip install --force-reinstall kyanitapi==<version>
+pip install --force-reinstall kyanitctl==<version>
 ```
 
 Where `<version>` is the latest released version.
