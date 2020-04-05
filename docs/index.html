@@ -105,7 +105,7 @@ from kyanitapi import Kyanit, KyanitConnectionError, KyanitRequestError
 from kyanitapi import ip_is_valid, netmask_is_valid, get_networks
 
 try:
-    from ._version import __version__
+    from ._version import __version__  # noqa
 except ImportError:
     pass
 
@@ -185,9 +185,9 @@ def _action_handler(extra_msg=&#39;&#39;):
                 func(*args, **kwargs)
             except (KyanitConnectionError, OSError):
                 print(&#39;\nERROR: Cannot connect to Kyanit.&#39;, end=&#39;\n\n&#39;)
-                exit()
                 if extra_msg:
                     print(extra_msg)
+                exit()
             except KyanitRequestError as exc:
                 print(&#39;\nERROR: Kyanit responded with status code {}&#39;.format(exc.args[0]),
                       end=&#39;\n\n&#39;)
@@ -244,18 +244,18 @@ class VerboseAction:
         except KeyboardInterrupt:
             print(&#39;Aborted.&#39;, end=&#39;\n\n&#39;)
     
-    @_action_handler(&#39;CHECK COLOR ID OR THE IP ADDRESS AGAIN.&#39;)
-    def ping(self, onlyping=False):
+    @_action_handler(&#39;CHECK THE COLOR ID OR THE IP ADDRESS AGAIN!&#39;)
+    def ping(self):
         print(&#39;Pinging...&#39;)
         success = self.kyanit.ping(verbose=True)
         print()
         if success:
-            print(&#39;Retrieving system status...&#39;)
-            status = self.kyanit.get_status()
-            print(&#39;System state is {}. Kyanit firmware version is {}.&#39;
-                  .format(&#39;OK&#39; if &#39;ERROR&#39; not in status[&#39;run_state&#39;]
-                          else status[&#39;run_state&#39;],
-                          status[&#39;firmware_version&#39;]))
+            print(&#39;Retrieving system status...&#39;, end=&#39;\r&#39;)
+            self.kyanit.get_status()
+            print(&#39;Retrieving system status done.&#39;)
+            conn_info = self.kyanit.info()
+            print(&#39;Kyanit {} is responding on IP address {}.&#39;
+                  .format(conn_info[&#39;color_id&#39;], conn_info[&#39;ip_addr&#39;]))
         else:
             raise KyanitConnectionError
         print()
@@ -314,7 +314,8 @@ class VerboseAction:
     def print_file_list(self):
         print(&#39;Retrieving file list...&#39;, end=&#39;\r&#39;)
         files = self.kyanit.get_file_list()
-        print(&#39;Retrieving file list done. Files:&#39;, end=&#39;\n\n&#39;)
+        print(&#39;Retrieving file list done.&#39;)
+        print(&#39;Files on Kyanit:&#39;, end=&#39;\n\n&#39;)
         for file in files:
             print(file)
         print()
@@ -348,13 +349,17 @@ class VerboseAction:
     @_action_handler()
     def print_file(self, filename):
         try:
+            print(&#39;Downloading \&#39;{}\&#39; ...&#39;.format(filename), end=&#39;\r&#39;)
             data = self.kyanit.get_file(filename)
+            print(&#39;Downloading \&#39;{}\&#39; done.&#39;.format(filename))
+            print(&#39;Contents:&#39;, end=&#39;\n\n&#39;)
             try:
                 print(data.decode())
             except Exception:
                 print(data)
         except KyanitRequestError as exc:
             if exc.args[0] == 404:
+                print()
                 print(&#39;File \&#39;{}\&#39; not found on Kyanit.&#39;.format(filename))
             else:
                 raise
@@ -419,8 +424,13 @@ class VerboseAction:
     @_action_handler()
     def netvar(self, json_str=None):
         if json_str is None:
-            print(&#39;Getting outbound netvar...&#39;)
-            print(self.kyanit.netvar())
+            print(&#39;Getting outbound netvar...&#39;, end=&#39;\r&#39;)
+            netvar = self.kyanit.netvar()
+            print(&#39;Getting outbound netvar done.&#39;)
+            if netvar is None:
+                print(&#39;Netvar empty.&#39;)
+            else:
+                print(&#39;Netvar is:&#39;, self.kyanit.netvar())
             print()
             return
         
@@ -429,9 +439,9 @@ class VerboseAction:
         except json.decoder.JSONDecodeError:
             print(&#39;ERROR: Malformed JSON.&#39;)
         else:
-            print(&#39;Setting inbound netvar...&#39;)
+            print(&#39;Setting inbound netvar...&#39;, end=&#39;\r&#39;)
             self.kyanit.netvar(obj)
-            print(&#39;Done.&#39;, end=&#39;\n\n&#39;)
+            print(&#39;Setting inbound netvar done.&#39;)
 
 
 __pdoc__[&#39;VerboseAction&#39;] = False
@@ -448,9 +458,9 @@ def main(*cli_args):
                              &#39;which is a set of 3 letters representing colors Red, Green, Blue, &#39;
                              &#39;Cyan, Magenta, Yellow or White; after initial setup, these colors &#39;
                              &#39;show up on the Kyanit, when the button is pressed; example: RGB, BGY &#39;
-                             &#39; etc.; must be ommited if -ip is given&#39;)
+                             &#39; etc.; must be omitted if -ip is given&#39;)
     parser.add_argument(&#39;-setup&#39;, action=&#39;store_true&#39;,
-                        help=&#39;intial setup of Kyanit; perform when first connected to the &#39;
+                        help=&#39;initial setup of Kyanit; perform when first connected to the &#39;
                              &#39;Kyanit\&#39;s WLAN; must be on Kyanit\&#39;s WLAN for setup to work; &#39;
                              &#39;no other actions will be performed; Color ID and -ip don\&#39;t have to &#39;
                              &#39;be provided, and are disregarded&#39;)
@@ -461,12 +471,15 @@ def main(*cli_args):
                              &#39;rescue will be required&#39;)
     parser.add_argument(&#39;-ip&#39;, nargs=&#39;?&#39;,
                         help=&#39;alternative connection method; IP address of the Kyanit, &#39;
-                             &#39;must be given if Color ID is ommited, or if Kyanit is on a non-/24 &#39;
+                             &#39;must be given if Color ID is omitted, or if Kyanit is on a non-/24 &#39;
                              &#39;network&#39;)
     parser.add_argument(&#39;-reset_network&#39;, action=&#39;store_true&#39;,
                         help=&#39;perform initial network selection again&#39;)
     parser.add_argument(&#39;-ping&#39;, action=&#39;store_true&#39;,
                         help=&#39;ping the Kyanit and get system state&#39;)
+    parser.add_argument(&#39;-timeout&#39;, metavar=&#39;SECONDS&#39;, type=int,
+                        help=&#39;set timeout for network operations, except ping; default is 5 &#39;
+                             &#39;seconds&#39;)
     parser.add_argument(&#39;-files&#39;, action=&#39;store_true&#39;, help=&#39;list files currently on Kyanit&#39;)
     parser.add_argument(&#39;-get&#39;, action=&#39;extend&#39;, nargs=&#39;+&#39;, metavar=&#39;FILE&#39;,
                         help=&#39;a list of files to get from the Kyanit; warning, all existing local &#39;
@@ -487,7 +500,7 @@ def main(*cli_args):
                         help=&#39;renames a file on Kyanit&#39;)
     parser.add_argument(&#39;-netvar&#39;, nargs=&#39;?&#39;, action=&#39;append&#39;, metavar=&#39;JSON&#39;,
                         help=&#39;get the outbound netvar if JSON is not specified,  or set the &#39;
-                             &#39;inbount netvar to JSON; valid JSON must be specified, escape &#39;
+                             &#39;inbound netvar to JSON; valid JSON must be specified, escape &#39;
                              &#39;quotes with \\\&#34; &#39;)
     parser.add_argument(&#39;-stop&#39;, action=&#39;store_true&#39;, help=&#39;start code.py&#39;)
     parser.add_argument(&#39;-stopforce&#39;, action=&#39;store_true&#39;,
@@ -553,36 +566,53 @@ def main(*cli_args):
         if network is not None:
             save_network(network)
             print(&#39;Saved. You may re-run this setup with -reset_network.&#39;, end=&#39;\n\n&#39;)
+        if args.reset_network:
+            exit()
 
     # OPEN KYANIT
 
     try:
-        kyanit = Kyanit(args.colorid, network_addr=network[1] if network is not None else None)
+        kyanit = Kyanit(args.colorid, network[1] if network is not None else None, args.ip)
+        kyanit.set_timeout(5)
     except ValueError as exc:
-        if str(exc) == &#39;NONE&#39;:
+        if str(exc) == &#39;IP invalid&#39;:
             parser.print_usage()
             print()
-            print(&#39;Either Color ID, -ip or -setup must be given.&#39;)
-            print(&#39;For getting started, -setup is a recommended first option.&#39;)
-            print(&#39;See kyanitctl -h for details and help.&#39;, end=&#39;\n\n&#39;)
+            print(&#39;The IP address \&#39;{}\&#39; is invalid.&#39;.format(args.ip))
+            print(&#39;See kyanitctl -h for help.&#39;, end=&#39;\n\n&#39;)
             exit()
-        elif str(exc) == &#39;BOTH&#39;:
+        elif str(exc) == &#39;Color ID invalid&#39;:
             parser.print_usage()
-            print(&#39;Either Color ID or -ip must be given, but not both. See kyanitctl -h for help.&#39;,
-                  end=&#39;\n\n&#39;)
+            print()
+            print(&#39;The Color ID \&#39;{}\&#39; is invalid. It either contains unsupported characters, or &#39;
+                  &#39;the resulting IP address octet would be greater than 254.&#39;.format(args.colorid))
+            print(&#39;See kyanitctl -h for help.&#39;, end=&#39;\n\n&#39;)
             exit()
-        elif str(exc) == &#39;CID&#39;:
-            print(&#39;The provided Color ID is invalid. See kyanitctl -h for help.&#39;, end=&#39;\n\n&#39;)
+        elif str(exc) == &#39;Network invalid&#39;:
+            # kyanitapi error when invalid network address is passed to Kyanit()
+            # this should not normally happen with kyanitctl, as network addresses are detected
+            # automatically.
+            print(&#39;ERROR: Unexpected error (network address invalid).&#39;)
+            print(&#39;Try re-running kyanitctl -reset_network.&#39;, end=&#39;\n\n&#39;)
             exit()
-        elif str(exc) == &#39;CIDIP&#39;:
-            print(&#39;The provided Color ID is invalid. It would result in an invalid IP address. &#39;
-                  &#39;Check colors on Kyanit again. See kyanitctl -h for help.&#39;, end=&#39;\n\n&#39;)
+        elif str(exc) == &#39;no connection method&#39;:
+            parser.print_usage()
+            print()
+            print(&#39;No connection method. Either Color ID or -ip must be provided.&#39;)
+            print(&#39;See kyanitctl -h for help.&#39;, end=&#39;\n\n&#39;)
             exit()
-        elif str(exc) == &#39;IP&#39;:
-            print(&#39;The provided IP address is invalid. See kyanitctl -h for help.&#39;, end=&#39;\n\n&#39;)
+        elif str(exc) == &#39;bad connection method&#39;:
+            parser.print_usage()
+            print()
+            print(&#39;Bad connection method. Either Color ID or -ip must be provided, &#39;
+                  &#39;but not both.&#39;, end=&#39;\n\n&#39;)
+            print(&#39;See kyanitctl -h for help.&#39;, end=&#39;\n\n&#39;)
             exit()
         else:
             raise exc
+    
+    if args.timeout:
+        kyanit.set_timeout(args.timeout)
 
     if args.ip is None:
         print(&#39;=== Kyanit {} ({} through \&#39;{}\&#39;) ===&#39;
