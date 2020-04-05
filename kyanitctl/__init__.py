@@ -374,8 +374,13 @@ class VerboseAction:
     @_action_handler()
     def netvar(self, json_str=None):
         if json_str is None:
-            print('Getting outbound netvar...')
-            print(self.kyanit.netvar())
+            print('Getting outbound netvar...', end='\r')
+            netvar = self.kyanit.netvar()
+            print('Getting outbound netvar done.')
+            if netvar is None:
+                print('Netvar empty.')
+            else:
+                print('Netvar is:', self.kyanit.netvar())
             print()
             return
         
@@ -384,9 +389,9 @@ class VerboseAction:
         except json.decoder.JSONDecodeError:
             print('ERROR: Malformed JSON.')
         else:
-            print('Setting inbound netvar...')
+            print('Setting inbound netvar...', end='\r')
             self.kyanit.netvar(obj)
-            print('Done.', end='\n\n')
+            print('Setting inbound netvar done.')
 
 
 __pdoc__['VerboseAction'] = False
