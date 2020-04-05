@@ -523,6 +523,7 @@ def main(*cli_args):
 
     try:
         kyanit = Kyanit(args.colorid, network_addr=network[1] if network is not None else None)
+        kyanit.set_timeout(5)
     except ValueError as exc:
         if str(exc) == 'IP invalid':
             parser.print_usage()
