@@ -17,8 +17,11 @@ def describe_head():
     `Exception('working tree broken')` is raised if the working tree is broken.
     """
 
-    git_describe = subprocess.check_output(
-        'git describe --tags --match "v*" --dirty --broken').decode().strip()[1:]
+    try:
+        git_describe = subprocess.check_output(
+            'git describe --tags --match "v*" --dirty --broken').decode().strip()[1:]
+    except subprocess.CalledProcessError:
+        return '0.0.0.dev0'
     if '-broken' in git_describe:
         raise Exception('working tree broken')
     match = re.match(r'([0-9]+\.[0-9]+\.[0-9]+)(\-([0-9+]))?', git_describe)
