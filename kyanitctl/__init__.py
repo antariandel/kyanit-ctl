@@ -55,7 +55,7 @@ from kyanitapi import Kyanit, KyanitConnectionError, KyanitRequestError
 from kyanitapi import ip_is_valid, netmask_is_valid, get_networks
 
 try:
-    from ._version import __version__
+    from ._version import __version__  # noqa
 except ImportError:
     pass
 
