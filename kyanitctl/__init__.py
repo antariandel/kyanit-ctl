@@ -513,6 +513,8 @@ def main(*cli_args):
         if network is not None:
             save_network(network)
             print('Saved. You may re-run this setup with -reset_network.', end='\n\n')
+        if args.reset_network:
+            exit()
 
     # OPEN KYANIT
 
