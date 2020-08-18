@@ -17,7 +17,8 @@
 
 Kyanit CTL is a command-line utility for interfacing and interacting with Kyanit.
 
-For a Python API, see Kyanit API at https://kyanit.eu/docs/kyanit-api.
+For a Python API, see Kyanit API at
+https://kyanit-project.github.io/kyanit-api/kyanitapi/.
 
 Install the latest released version of Kyanit CTL from PyPI with:
 
