@@ -495,7 +495,7 @@ def main(*cli_args):
         "-getall", action="store_true", help="same as -get, but it gets all files"
     )
     parser.add_argument(
-        "-cont", metavar="FILE", help="print contents of a file on Kyanit"
+        "-print", metavar="FILE", help="print contents of a file on Kyanit"
     )
     parser.add_argument(
         "-delete",
@@ -710,8 +710,8 @@ def main(*cli_args):
         else:
             action.get_files(args.get)
 
-    if args.cont:
-        action.print_file(args.cont)
+    if args.print:
+        action.print_file(args.print)
 
     if args.delete or args.purge:
         if args.purge:
