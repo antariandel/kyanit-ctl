@@ -252,12 +252,14 @@ class VerboseAction:
         print("Stopping code.py{}...".format(" (forcibly)" if force else ""), end="\r")
         self.kyanit.stop(force)
         print("Stopping code.py{} done.".format(" (forcibly)" if force else ""))
+        print()
 
     @_action_handler()
     def start(self):
         print("Starting code.py...", end="\r")
         self.kyanit.start()
         print("Starting code.py done.")
+        print()
 
     @_action_handler()
     def reboot(self, tries=5):
@@ -334,6 +336,7 @@ class VerboseAction:
                 print("File '{}' not found on Kyanit.".format(filename))
             else:
                 raise
+        print()
 
     @_action_handler()
     def put_files(self, pathnames):
