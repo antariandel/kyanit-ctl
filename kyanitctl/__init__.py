@@ -404,7 +404,9 @@ class VerboseAction:
             if netvar is None:
                 print("Netvar empty.")
             else:
-                print("Netvar is:", self.kyanit.netvar())
+                netvar_json = json.dumps(self.kyanit.netvar(), indent=2, sort_keys=True)
+                print("Netvar is:", end="\n\n")
+                print(netvar_json)
             print()
             return
 
@@ -413,9 +415,10 @@ class VerboseAction:
         except json.decoder.JSONDecodeError:
             print("ERROR: Malformed JSON.")
         else:
-            print("Setting inbound netvar...", end="\r")
+            print("Setting inbound netvar to '{}' ...".format(json_str), end="\r")
             self.kyanit.netvar(obj)
-            print("Setting inbound netvar done.")
+            print("Setting inbound netvar to '{}' done.".format(json_str))
+        print()
 
 
 __pdoc__["VerboseAction"] = False
@@ -526,8 +529,9 @@ def main(*cli_args):
         action="append",
         metavar="JSON",
         help="get the outbound netvar if JSON is not specified,  or set the "
-        "inbound netvar to JSON; valid JSON must be specified, escape "
-        'quotes with \\" ',
+        "inbound netvar to JSON; valid JSON must be specified; escape double "
+        'quotes with \\", use enclosing single quotes in Windows PowerShell, ex. '
+        '-netvar \'{\\"some_string\\": \\"my_string\\"}\'',
     )
     parser.add_argument("-stop", action="store_true", help="start code.py")
     parser.add_argument(
