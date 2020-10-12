@@ -99,7 +99,7 @@ def cleanup(exception):
 """
 
 
-def input_validate(msg, validator):
+def _input_validate(msg, validator):
     inp = ""
     while not validator(inp):
         print("{}: ".format(msg), end="")
@@ -109,10 +109,7 @@ def input_validate(msg, validator):
     return inp
 
 
-__pdoc__["input_validate"] = False
-
-
-def get_saved_network():
+def _get_saved_network():
     try:
         network = json.load(open(os.path.join(KYANITCTL_USER_DIR, "network.json")))
         return (network["interface"], network["ip_address"])
@@ -120,10 +117,7 @@ def get_saved_network():
         return None
 
 
-__pdoc__["get_saved_network"] = False
-
-
-def save_network(network):
+def _save_network(network):
     try:
         if len(network) != 2:
             raise TypeError("network must be indexable with 2 items")
@@ -133,9 +127,6 @@ def save_network(network):
         {"interface": network[0], "ip_address": network[1]},
         open(os.path.join(KYANITCTL_USER_DIR, "network.json"), "w"),
     )
-
-
-__pdoc__["save_network"] = False
 
 
 def _action_handler(extra_msg=""):
@@ -181,10 +172,10 @@ class VerboseAction:
         if not static:
             ifconfig = "dhcp"
         else:
-            ip_addr = input_validate("IP Address", ip_is_valid)
-            netmask = input_validate("Netmask", netmask_is_valid)
-            gateway = input_validate("Gateway", ip_is_valid)
-            dns = input_validate("DNS", ip_is_valid)
+            ip_addr = _input_validate("IP Address", ip_is_valid)
+            netmask = _input_validate("Netmask", netmask_is_valid)
+            gateway = _input_validate("Gateway", ip_is_valid)
+            dns = _input_validate("DNS", ip_is_valid)
             ifconfig = (ip_addr, netmask, gateway, dns)
         config = {"ssid": ssid, "password": password, "ifconfig": ifconfig}
         print("\nConfiguration (wlan.json) will be:", end="\n\n")
@@ -573,7 +564,7 @@ def main(*cli_args):
 
     # SELECT NETWORK
 
-    network = get_saved_network()
+    network = _get_saved_network()
     if (network is None and args.colorid is not None) or args.reset_network:
 
         def select(networks):
@@ -624,7 +615,7 @@ def main(*cli_args):
             )
             network = select(networks)
         if network is not None:
-            save_network(network)
+            _save_network(network)
             print("Saved. You may re-run this setup with -reset_network.", end="\n\n")
         if args.reset_network:
             exit()
