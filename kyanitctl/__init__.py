@@ -432,18 +432,18 @@ def main(*cli_args):
         "which is a set of 3 letters representing colors Red, Green, Blue, "
         "Cyan, Magenta, Yellow or White; after initial setup, these colors "
         "show up on the Kyanit, when the button is pressed; example: RGB, BGY "
-        " etc.; must be omitted if -ip is given",
+        " etc.; must be omitted if --ip is given",
     )
     parser.add_argument(
-        "-setup",
+        "--setup",
         action="store_true",
         help="initial setup of Kyanit; perform when first connected to the "
         "Kyanit's WLAN; must be on Kyanit's WLAN for setup to work; "
-        "no other actions will be performed; Color ID and -ip don't have to "
+        "no other actions will be performed; Color ID and --ip don't have to "
         "be provided, and are disregarded",
     )
     parser.add_argument(
-        "-setupstatic",
+        "--setup-static",
         action="store_true",
         help="same as setup, but this will configure the Kyanit with a static IP "
         "instead of DHCP; only recommended if you know what you're doing; "
@@ -451,31 +451,34 @@ def main(*cli_args):
         "rescue will be required",
     )
     parser.add_argument(
-        "-ip",
+        "-i",
+        "--ip",
         nargs="?",
         help="alternative connection method; IP address of the Kyanit, "
         "must be given if Color ID is omitted, or if Kyanit is on a non-/24 "
         "network",
     )
     parser.add_argument(
-        "-reset_network",
+        "--reset-network",
         action="store_true",
         help="perform initial network selection again",
     )
     parser.add_argument(
-        "-ping", action="store_true", help="ping the Kyanit and get system state"
+        "--ping", action="store_true", help="ping the Kyanit and get system state"
     )
     parser.add_argument(
-        "-timeout",
+        "-t",
+        "--timeout",
         metavar="SECONDS",
         type=int,
         help="set timeout for network operations, except ping; default is 5 " "seconds",
     )
     parser.add_argument(
-        "-files", action="store_true", help="list files currently on Kyanit"
+        "-f", "--files", action="store_true", help="list files currently on Kyanit"
     )
     parser.add_argument(
-        "-get",
+        "-g",
+        "--get",
         action="extend",
         nargs="+",
         metavar="FILE",
@@ -483,13 +486,13 @@ def main(*cli_args):
         "files will be irreversibly OVERWRITTEN!",
     )
     parser.add_argument(
-        "-getall", action="store_true", help="same as -get, but it gets all files"
+        "--get-all", action="store_true", help="same as --get, but it gets all files"
     )
     parser.add_argument(
-        "-print", metavar="FILE", help="print contents of a file on Kyanit"
+        "--print", metavar="FILE", help="print contents of a file on Kyanit"
     )
     parser.add_argument(
-        "-delete",
+        "--delete",
         action="extend",
         nargs="+",
         metavar="FILE",
@@ -497,12 +500,13 @@ def main(*cli_args):
         " will require performing the initial setup again",
     )
     parser.add_argument(
-        "-purge",
+        "--purge",
         action="store_true",
-        help="same as -delete, but deletes all files; wlan.json is preserved",
+        help="same as --delete, but deletes all files; wlan.json is preserved",
     )
     parser.add_argument(
-        "-put",
+        "-p",
+        "--put",
         action="extend",
         nargs="+",
         metavar="FILE",
@@ -511,33 +515,34 @@ def main(*cli_args):
         "files will be irreversibly OVERWRITTEN!",
     )
     parser.add_argument(
-        "-rename",
+        "--rename",
         action="extend",
         nargs=2,
         metavar=("OLD", "NEW"),
         help="renames a file on Kyanit",
     )
     parser.add_argument(
-        "-netvar",
+        "-n",
+        "--netvar",
         nargs="?",
         action="append",
         metavar="JSON",
         help="get the outbound netvar if JSON is not specified,  or set the "
         "inbound netvar to JSON; valid JSON must be specified; escape double "
         'quotes with \\", use enclosing single quotes in Windows PowerShell, ex. '
-        '-netvar \'{\\"some_string\\": \\"my_string\\"}\'',
+        '--netvar \'{\\"some_string\\": \\"my_string\\"}\'',
     )
-    parser.add_argument("-stop", action="store_true", help="start code.py")
+    parser.add_argument("--stop", action="store_true", help="stop code.py")
     parser.add_argument(
-        "-stopforce", action="store_true", help="forcibly stop code.py (no cleanup)"
+        "--stop-force", action="store_true", help="forcibly stop code.py (no cleanup)"
     )
-    parser.add_argument("-start", action="store_true", help="stop running code.py")
+    parser.add_argument("--start", action="store_true", help="start running code.py")
     parser.add_argument(
-        "-reboot", action="store_true", help="reboot Kyanit (hard reset)"
+        "-r", "--reboot", action="store_true", help="reboot Kyanit (hard reset)"
     )
     # parser.add_argument('-reset', action='store_true',
     #                     help='reset Kyanit (soft reset)')
-    parser.add_argument("-status", action="store_true", help="get status info")
+    parser.add_argument("-s", "--status", action="store_true", help="get status info")
 
     args = parser.parse_args(*cli_args)
     print()
@@ -557,7 +562,7 @@ def main(*cli_args):
         print(
             "This may have happened, because your WiFi SSID or password has changed. "
             "In that case, power-cycle your Kyanit, connect to it, and re-run "
-            "kyanitctl -setup."
+            "kyanitctl --setup."
         )
         print()
         exit()
@@ -594,7 +599,7 @@ def main(*cli_args):
                 print(
                     "No such network detected. "
                     "Connection with Color ID is not supported. "
-                    "Specify -ip instead. See kyanit -h for details."
+                    "Specify --ip instead. See kyanit -h for details."
                 )
                 exit()
         if len(networks) == 1:
@@ -606,7 +611,7 @@ def main(*cli_args):
             )
             print(
                 "If Kyanit is not on this network, "
-                "connect with -ip instead of the Color ID."
+                "connect with --ip instead of the Color ID."
             )
         if len(networks) > 1:
             print(
@@ -616,7 +621,7 @@ def main(*cli_args):
             network = select(networks)
         if network is not None:
             _save_network(network)
-            print("Saved. You may re-run this setup with -reset_network.", end="\n\n")
+            print("Saved. You may re-run this setup with --reset-network.", end="\n\n")
         if args.reset_network:
             exit()
 
@@ -651,19 +656,19 @@ def main(*cli_args):
             # this should not normally happen with kyanitctl, as network addresses are
             # detected automatically.
             print("ERROR: Unexpected error (network address invalid).")
-            print("Try re-running kyanitctl -reset_network.", end="\n\n")
+            print("Try re-running kyanitctl --reset-network.", end="\n\n")
             exit()
         elif str(exc) == "no connection method":
             parser.print_usage()
             print()
-            print("No connection method. Either Color ID or -ip must be provided.")
+            print("No connection method. Either Color ID or --ip must be provided.")
             print("See kyanitctl -h for help.", end="\n\n")
             exit()
         elif str(exc) == "bad connection method":
             parser.print_usage()
             print()
             print(
-                "Bad connection method. Either Color ID or -ip must be provided, "
+                "Bad connection method. Either Color ID or --ip must be provided, "
                 "but not both.",
                 end="\n\n",
             )
